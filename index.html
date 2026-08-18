@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suhaeng Collector</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <header class="top-header">
+            <div class="today-card">
+                <i class="fa-regular fa-calendar-check today-icon"></i>
+                <div class="today-info">
+                    <span class="today-label">TODAY</span>
+                    <strong id="today-date-text">2026.08.15 (토)</strong>
+                </div>
+            </div>
+
+            <div class="classroom-banner">
+                <div class="banner-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <span class="banner-title">최근 게시물 알림</span>
+                <div class="banner-chips">
+                    <span class="chip blue"><i class="fa-solid fa-circle"></i> 수학 (새 과제)</span>
+                    <span class="chip purple"><i class="fa-solid fa-circle"></i> 영어 (공지)</span>
+                </div>
+            </div>
+
+            <!-- 계정 프로필 & 로그인 버튼 -->
+            <div class="account-container">
+                <button id="account-btn" class="account-btn">
+                    <i class="fa-solid fa-circle-user avatar-icon"></i>
+                    <span id="account-name-text">게스트 (로그인 필요)</span>
+                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                </button>
+                <div id="account-dropdown" class="dropdown-menu">
+                    <div class="user-info" id="user-info-box">
+                        <strong id="user-display-name">게스트 사용자</strong>
+                        <span id="user-display-email">로그인이 필요합니다.</span>
+                    </div>
+                    <button id="btn-auth-action" class="auth-action-btn login">
+                        <i class="fa-solid fa-right-to-bracket"></i> 구글 계정으로 로그인
+                    </button>
+                    <div class="menu-divider"></div>
+                    <div class="menu-section">
+                        <label class="menu-label">화면 뷰 전환</label>
+                        <div class="view-switchers">
+                            <button id="btn-view-dashboard" class="switch-btn active"><i class="fa-solid fa-table-cells-large"></i> 대시보드</button>
+                            <button id="btn-view-calendar" class="switch-btn"><i class="fa-solid fa-calendar-days"></i> 캘린더</button>
+                        </div>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-section">
+                        <label class="menu-label">화면 테마</label>
+                        <button id="btn-theme-toggle" class="theme-toggle-btn"><i class="fa-solid fa-moon"></i> <span>다크 모드</span></button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="main-tab-nav">
+            <button id="tab-suhaeng" class="tab-btn active"><i class="fa-solid fa-pen-to-square"></i> 수행평가 모음</button>
+            <button id="tab-materials" class="tab-btn"><i class="fa-solid fa-folder-open"></i> 유인물 & 공지사항</button>
+        </nav>
+
+        <main id="view-dashboard" class="main-view active">
+            <div class="dashboard-grid">
+                <section class="grid-card col-main">
+                    <div class="card-header">
+                        <h2>해야할 수행/ 작업</h2>
+                        <span class="count-badge" id="todo-count">0</span>
+                    </div>
+                    <div class="task-card-list" id="todo-list"></div>
+                </section>
+
+                <section class="grid-card col-main">
+                    <div class="card-header">
+                        <h2>진행중인 작업</h2>
+                        <span class="count-badge blue" id="inprogress-count">0</span>
+                    </div>
+                    <div class="task-card-list" id="inprogress-list"></div>
+                </section>
+
+                <div class="col-side-group">
+                    <section class="grid-card col-side">
+                        <div class="card-header">
+                            <h2>최근에 끝낸 수행/작업</h2>
+                            <span class="count-badge green" id="done-count">0</span>
+                        </div>
+                        <div class="task-card-list compact" id="done-list"></div>
+                    </section>
+
+                    <section class="grid-card col-side urgent-border">
+                        <div class="card-header">
+                            <h2>오늘/내일 마감 🔥</h2>
+                            <span class="count-badge red" id="urgent-count">0</span>
+                        </div>
+                        <div class="task-card-list compact" id="urgent-list"></div>
+                    </section>
+
+                    <section class="grid-card col-side overdue-border">
+                        <div class="card-header">
+                            <h2>마감 기한이 지난 수행 ⚠️</h2>
+                            <span class="count-badge dark-red" id="overdue-count">0</span>
+                        </div>
+                        <div class="task-card-list compact" id="overdue-list"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+
+        <main id="view-materials" class="main-view">
+            <div class="grid-card materials-container">
+                <div class="card-header">
+                    <h2>수업 유인물 및 공지사항 목록</h2>
+                    <span class="badge-tag">AI 자동 분류됨</span>
+                </div>
+                <div class="materials-grid" id="materials-list"></div>
+            </div>
+        </main>
+
+        <main id="view-calendar" class="main-view">
+            <div class="grid-card calendar-wrapper">
+                <div class="calendar-header"><h2>📅 2026년 8월 수행평가 일정</h2></div>
+                <div class="calendar-grid">
+                    <div class="day-label red">일</div><div class="day-label">월</div><div class="day-label">화</div>
+                    <div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div>
+                    <div class="day-label blue">토</div>
+                    <div id="calendar-cells" class="calendar-cells-wrapper"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 우측 하단 새 과제 추가 버튼 (FAB) -->
+    <button id="fab-add-task" class="fab-btn" title="새 수행평가 추가">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- 수행평가 직접 추가 모달 -->
+    <div id="add-modal" class="modal">
+        <div class="modal-box">
+            <button class="modal-close-btn" id="add-modal-close">&times;</button>
+            <h2>새 수행평가 등록</h2>
+            <form id="add-task-form" class="add-form">
+                <input type="text" id="add-subject" placeholder="과목명 (예: 수학, 영어)" required>
+                <input type="text" id="add-title" placeholder="수행평가 제목" required>
+                <input type="date" id="add-duedate" required>
+                <textarea id="add-desc" placeholder="과제 세부 내용을 입력하세요..."></textarea>
+                <button type="submit" class="submit-btn">등록하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 상세 보기 및 AI 모달 -->
+    <div id="task-modal" class="modal">
+        <div class="modal-box">
+            <button class="modal-close-btn" id="modal-close">&times;</button>
+            <div class="modal-header">
+                <span class="subject-tag" id="modal-subject">과목명</span>
+                <h2 id="modal-title" class="modal-title">과제 제목</h2>
+                <p id="modal-desc" class="modal-desc">과제 세부 내용 설명</p>
+            </div>
+
+            <div class="subtask-container">
+                <div class="subtask-header">
+                    <h3>단계별 세부 체크리스트</h3>
+                    <button id="btn-ai-subtask" class="ai-gen-btn">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI 자동 계획
+                    </button>
+                </div>
+                <div id="modal-subtask-list" class="subtask-list"></div>
+                <div class="subtask-add-box">
+                    <input type="text" id="subtask-input" placeholder="새로운 세부 단계 추가...">
+                    <button id="btn-add-subtask">추가</button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="modal-link" href="#" target="_blank" class="classroom-btn">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> 구글 클래스룸 바로가기
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="app.js"></script>
+</body>
+</html>
