@@ -544,3 +544,195 @@ body {
     font-weight: 700;
     cursor: pointer;
 }
+
+/* 첨부 자료(파일/링크) 칩 - 카드용 */
+.task-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.attachment-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    padding: 3px 9px;
+    border-radius: 7px;
+    text-decoration: none;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.attachment-chip:hover {
+    color: var(--toss-blue);
+    border-color: var(--toss-blue);
+    background: var(--toss-blue-light);
+}
+
+.attachment-chip i { font-size: 0.68rem; flex-shrink: 0; }
+
+/* 첨부 자료 목록 - 모달용 */
+.modal-attachments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--bg-main);
+    border-radius: var(--radius-small);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.modal-attachment-item i { color: var(--toss-blue); font-size: 0.95rem; flex-shrink: 0; }
+
+.modal-attachment-item:hover {
+    background: var(--toss-blue-light);
+    transform: translateX(2px);
+}
+
+/* 검색/필터/정렬 바 */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-small);
+    padding: 11px 16px;
+    box-shadow: var(--shadow-soft);
+}
+
+.search-box i { color: var(--text-tertiary); font-size: 0.85rem; }
+
+.search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-family: inherit;
+}
+
+.filter-select {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-small);
+    padding: 11px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    padding: 30px 10px;
+}
+
+/* 캘린더 헤더 월 이동 */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.cal-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
+}
+
+.cal-nav-btn:hover { background: var(--toss-blue-light); color: var(--toss-blue); }
+
+.cal-cell.empty { background: transparent; }
+
+/* 모달 - 상태 전환 스위처 */
+.status-switcher {
+    display: flex;
+    gap: 6px;
+    background: var(--bg-main);
+    padding: 4px;
+    border-radius: var(--radius-small);
+}
+
+.status-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.status-btn.active { background: var(--card-bg); color: var(--toss-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+/* 모달 - 수정/삭제 버튼 */
+.modal-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.modal-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px;
+    border-radius: var(--radius-small);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+}
+
+.modal-action-btn.edit:hover { color: var(--toss-blue); border-color: var(--toss-blue); background: var(--toss-blue-light); }
+.modal-action-btn.delete:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-light); }
