@@ -1,6 +1,6 @@
 // 앱 설치(PWA)용 서비스 워커: 이 사이트의 파일만 캐시해서 오프라인에서도 화면이 열리게 합니다.
 // 구글 로그인, 클래스룸 API, AI 서버 같은 외부 요청은 건드리지 않습니다.
-const CACHE = "suhaeng-collector-v1";
+const CACHE = "suhaeng-collector-v2";
 const FILES = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json",
   "./icons/icon-192.png", "./icons/icon-512.png"];
 

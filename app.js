@@ -14,7 +14,6 @@ const GOOGLE_SCOPES = [
 const AI_WORKER_URL = 'https://suhaeng-ai-proxy.studyinthis.workers.dev/';
 
 let accessToken = null;
-let tokenClient = null;
 const TODAY_DATE_STR = '2026-08-15';
 
 // 로그인 상태 객체
@@ -58,50 +57,92 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 1. 로그인/로그아웃 시스템
-// 1. 로그인/로그아웃 시스템
+// 팝업 창 대신, 앱 창 자체가 구글 로그인 페이지로 이동했다가 로그인 후 돌아오는 방식(리디렉션)입니다.
+// ※ Google Cloud Console의 OAuth 클라이언트 → "승인된 리디렉션 URI"에 아래 REDIRECT_URI 주소가 등록되어 있어야 합니다.
+//   예: https://20261220-commits.github.io/Task-Manager-Web/
+const REDIRECT_URI = location.origin + location.pathname.replace(/index\.html$/, '');
+const TOKEN_KEY = 'google_access_token';
+
+function startGoogleLogin() {
+    const state = crypto.randomUUID();
+    sessionStorage.setItem('oauth_state', state);
+    const params = new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: 'token',
+        scope: GOOGLE_SCOPES,
+        state,
+        include_granted_scopes: 'true',
+        prompt: 'select_account'
+    });
+    location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+// 로그인 페이지에서 돌아왔을 때 주소 뒤의 #access_token=... 을 읽고, 주소창에서 지웁니다.
+function readLoginResult() {
+    const hash = location.hash;
+    if (!hash.includes('access_token=') && !hash.includes('error=')) return;
+    const p = new URLSearchParams(hash.slice(1));
+    history.replaceState(null, '', location.pathname + location.search);
+
+    const expected = sessionStorage.getItem('oauth_state');
+    sessionStorage.removeItem('oauth_state');
+    if (p.get('error')) {
+        if (p.get('error') !== 'access_denied') alert('로그인에 실패했어요. 다시 시도해주세요.');
+        return;
+    }
+    if (!expected || p.get('state') !== expected) {
+        alert('로그인 확인에 실패했어요. 다시 시도해주세요.');
+        return;
+    }
+    const expiresAt = Date.now() + (Number(p.get('expires_in')) || 3600) * 1000;
+    sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token: p.get('access_token'), expiresAt }));
+}
+
+// 이 창에서 이미 로그인했고 토큰이 아직 유효하면 불러옵니다(새로고침해도 로그인 유지).
+function loadSavedToken() {
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(TOKEN_KEY));
+        if (saved && saved.expiresAt - 60000 > Date.now()) return saved.token;
+    } catch (e) {}
+    sessionStorage.removeItem(TOKEN_KEY);
+    return null;
+}
+
 function initAuth() {
     const authBtn = document.getElementById('btn-auth-action');
 
-    // 구글 로그인 스크립트는 늦게 뜨거나(async) 오프라인이면 아예 안 뜰 수 있으므로,
-    // 준비될 때까지 기다렸다가 연결합니다. (없어도 나머지 화면은 정상 동작)
-    const setupTokenClient = () => {
-        if (tokenClient) return true;
-        if (!window.google || !google.accounts || !google.accounts.oauth2) return false;
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: GOOGLE_SCOPES,
-            callback: async (response) => {
-                if (response.error) {
-                    console.error('로그인 실패:', response);
-                    alert('로그인에 실패했어요. 다시 시도해주세요.');
-                    return;
-                }
-                accessToken = response.access_token;
-                await fetchUserProfile();
-                await fetchClassroomData();
-            }
-        });
-        return true;
-    };
-    if (!setupTokenClient()) {
-        const timer = setInterval(() => { if (setupTokenClient()) clearInterval(timer); }, 300);
-    }
-
     authBtn.addEventListener('click', () => {
         if (!currentUser) {
-            if (!setupTokenClient()) {
-                alert('구글 로그인을 불러오지 못했어요. 인터넷 연결을 확인해주세요.');
-                return;
-            }
-            tokenClient.requestAccessToken();
+            startGoogleLogin();
         } else {
             // 로그아웃
-            if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
+            if (accessToken) {
+                fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(accessToken), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                }).catch(() => {});
+            }
+            sessionStorage.removeItem(TOKEN_KEY);
             accessToken = null;
             currentUser = null;
             updateAuthUI();
         }
     });
+
+    readLoginResult();
+    accessToken = loadSavedToken();
+    if (accessToken) {
+        fetchUserProfile()
+            .then(() => fetchClassroomData())
+            .catch((err) => {
+                console.error('로그인 정보 불러오기 실패:', err);
+                sessionStorage.removeItem(TOKEN_KEY);
+                accessToken = null;
+                currentUser = null;
+                updateAuthUI();
+            });
+    }
 }
 
 // 구글 계정 프로필(이름/이메일) 가져오기
@@ -109,6 +150,7 @@ async function fetchUserProfile() {
     const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` }
     });
+    if (!res.ok) throw new Error('프로필 요청 실패: ' + res.status);
     const profile = await res.json();
     currentUser = { name: profile.name, email: profile.email };
     updateAuthUI();
