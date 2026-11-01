@@ -736,3 +736,6 @@ body {
 
 .modal-action-btn.edit:hover { color: var(--toss-blue); border-color: var(--toss-blue); background: var(--toss-blue-light); }
 .modal-action-btn.delete:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-light); }
+
+/* 숨김 속성이 display 스타일보다 우선하도록 */
+[hidden] { display: none !important; }

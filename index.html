@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suhaeng Collector</title>
+    <meta name="theme-color" content="#3182f6">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -55,6 +59,10 @@
                     <div class="menu-section">
                         <label class="menu-label">화면 테마</label>
                         <button id="btn-theme-toggle" class="theme-toggle-btn"><i class="fa-solid fa-moon"></i> <span>다크 모드</span></button>
+                    </div>
+                    <div class="menu-section" id="install-section" hidden>
+                        <div class="menu-divider"></div>
+                        <button id="btn-install-app" class="theme-toggle-btn"><i class="fa-solid fa-download"></i> <span>앱으로 설치하기</span></button>
                     </div>
                 </div>
             </div>
@@ -216,5 +224,27 @@
     </div>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="app.js"></script>
+    <script>
+        // 앱 설치(PWA) 지원
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            document.getElementById('install-section').hidden = false;
+        });
+        document.getElementById('btn-install-app').addEventListener('click', async () => {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            document.getElementById('install-section').hidden = true;
+        });
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('install-section').hidden = true;
+        });
+    </script>
 </body>
 </html>

@@ -62,23 +62,37 @@ document.addEventListener('DOMContentLoaded', () => {
 function initAuth() {
     const authBtn = document.getElementById('btn-auth-action');
 
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: GOOGLE_SCOPES,
-        callback: async (response) => {
-            if (response.error) {
-                console.error('로그인 실패:', response);
-                alert('로그인에 실패했어요. 다시 시도해주세요.');
-                return;
+    // 구글 로그인 스크립트는 늦게 뜨거나(async) 오프라인이면 아예 안 뜰 수 있으므로,
+    // 준비될 때까지 기다렸다가 연결합니다. (없어도 나머지 화면은 정상 동작)
+    const setupTokenClient = () => {
+        if (tokenClient) return true;
+        if (!window.google || !google.accounts || !google.accounts.oauth2) return false;
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: GOOGLE_SCOPES,
+            callback: async (response) => {
+                if (response.error) {
+                    console.error('로그인 실패:', response);
+                    alert('로그인에 실패했어요. 다시 시도해주세요.');
+                    return;
+                }
+                accessToken = response.access_token;
+                await fetchUserProfile();
+                await fetchClassroomData();
             }
-            accessToken = response.access_token;
-            await fetchUserProfile();
-            await fetchClassroomData();
-        }
-    });
+        });
+        return true;
+    };
+    if (!setupTokenClient()) {
+        const timer = setInterval(() => { if (setupTokenClient()) clearInterval(timer); }, 300);
+    }
 
     authBtn.addEventListener('click', () => {
         if (!currentUser) {
+            if (!setupTokenClient()) {
+                alert('구글 로그인을 불러오지 못했어요. 인터넷 연결을 확인해주세요.');
+                return;
+            }
             tokenClient.requestAccessToken();
         } else {
             // 로그아웃
@@ -608,7 +622,7 @@ function initModal() {
     closeBtn.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     aiBtn.onclick = () => { if (currentTaskForModal) generateAISubtasks(currentTaskForModal); };
-    topicBtn.onclick = () => { if (currentTaskForModal) generateTopicSuggestions(currentTaskForModal); };
+    if (topicBtn) topicBtn.onclick = () => { if (currentTaskForModal) generateTopicSuggestions(currentTaskForModal); };
 
     editBtn.onclick = () => {
         if (currentTaskForModal) {
@@ -688,9 +702,11 @@ function openModal(task) {
     renderSubtasks(task.id);
 
     // 이전 과제에서 뜬 AI 주제 추천 결과 초기화
+    // (주제 추천 칸이 화면에 없으면 건너뜀)
     const topicPanel = document.getElementById('ai-topic-panel');
-    document.getElementById('ai-topic-results').innerHTML = '';
-    topicPanel.classList.remove('show');
+    const topicResults = document.getElementById('ai-topic-results');
+    if (topicResults) topicResults.innerHTML = '';
+    if (topicPanel) topicPanel.classList.remove('show');
 
     modal.style.display = 'block';
 
